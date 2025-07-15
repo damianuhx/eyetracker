@@ -9,7 +9,6 @@
         top: 0;
         background-color: #EEEEEE;
     }
-    .nameda{position: sticky; left: 0; background-color: #EEEEEE;}
     </style>
 </head>
 
@@ -104,7 +103,7 @@ $data = readTSV('input.tsv');
   </thead>
   <tbody>
     <tr v-for="(row, index) in input" :key="index">
-      <td :class="key.slice(0, 8).replace(/[^a-zA-Z0-9]/g, '').toLowerCase()" v-for="(value, key) in row" :key="key">{{ value }}</td>
+      <td :class="'cell'+key" v-for="(value, key) in row" :key="key">{{ value }}</td>
     </tr>
   </tbody>
 </table>
@@ -125,9 +124,7 @@ $data = readTSV('input.tsv');
         this.input = <?= $data ?>;
         console.log(this.input);
         this.input=this.input.data;
-        //make arrays of: Link (paper), Native language(s), Stimulus language, Source, Comprehension questions, 
-        //divide fields with multiple values: Age range, Total # words/chars, Age mean±SD
-        //both: Age range
+        
       },
       methods:
       {

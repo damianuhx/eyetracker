@@ -125,8 +125,8 @@ $data = readTSV('input.tsv');
         this.input = <?= $data ?>;
         console.log(this.input);
         this.input=this.input.data;
-        //make arrays of: Link (paper), Native language(s), Stimulus language, Source, Comprehension questions, 
-        //divide fields with multiple values: Age range, Total # words/chars, Age mean±SD
+        //make arrays of: Link (paper), Native language(s), Stimulus language, Source (links), 
+        //divide fields with multiple values: Age mean±SD
         //both: Age range
       },
       methods:

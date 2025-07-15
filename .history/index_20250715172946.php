@@ -142,7 +142,19 @@ $data = readTSV('input.tsv');
             //link 
             //number
             //array
+function splitFieldInArray(dataArray, fieldName, newField1 = 'part1', newField2 = 'part2') {
+  return dataArray.map(obj => {
+    const value = obj[fieldName];
 
+    if (typeof value === 'string' && value.includes(';')) {
+      const [part1, part2] = value.split(';').map(s => s.trim());
+      return { ...obj, [newField1]: part1, [newField2]: part2 };
+    }
+
+    // If no semicolon or not a string, return as-is
+    return obj;
+  });
+},
 sortBy(field) {
     if (this.sortField === field) {
       this.sortAsc = !this.sortAsc;
