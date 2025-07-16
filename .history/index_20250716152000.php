@@ -161,7 +161,7 @@ $data = readTSV('input.tsv');
           
           let returnvalue ={};
           if (type.slice(0, 8)=='array of'){
-            value = value.split(';');
+            returnvalue=value.split(';');
           }
           if (type==''){
             //array of links

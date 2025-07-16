@@ -159,9 +159,9 @@ $data = readTSV('input.tsv');
         split(key, value, type){
           console.log(type);
           
-          let returnvalue ={};
+
           if (type.slice(0, 8)=='array of'){
-            value = value.split(';');
+            value=value.split(';');
           }
           if (type==''){
             //array of links
@@ -174,7 +174,7 @@ $data = readTSV('input.tsv');
             //
           }
           else{
-            returnvalue = {[key]: value}
+            let returnvalue = {[key]: value}
           }
           console.log(returnvalue);
           return returnvalue;

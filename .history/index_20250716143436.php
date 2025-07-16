@@ -157,27 +157,8 @@ $data = readTSV('input.tsv');
         // Do something with key and value
         },
         split(key, value, type){
-          console.log(type);
-          
-          let returnvalue ={};
-          if (type.slice(0, 8)=='array of'){
-            value = value.split(';');
-          }
-          if (type==''){
-            //array of links
-            //array of choice
-
-            //array of min-max !
-            //array of mean(±SD)
-            //array Total # words/chars
-
-            //
-          }
-          else{
-            returnvalue = {[key]: value}
-          }
-          console.log(returnvalue);
-          return returnvalue;
+          console.log({[key]: value});
+          return {[key]: value}
         },
         //filter fields
         //sort by fields

@@ -28,7 +28,7 @@ function readTSV($filename) {
         return false;
     }
     
-    $rowcount=0;
+    $rowcount==0;
     while (($line = fgets($handle)) !== false) {
 
       $line = rtrim($line, "\r\n");
@@ -61,10 +61,10 @@ function readTSV($filename) {
         }
 
         else if ($rowcount==1){
-        $data['descs'] = $row;
+        $data['desc'] = $row;
       }
       else if ($rowcount==2){
-        $data['types'] = $row;
+        $data['type'] = $row;
       }
       else{
         $data['data'][] = $row;
@@ -117,8 +117,6 @@ $data = readTSV('input.tsv');
     createApp({
       data() {
         return {
-          descs: {},
-          types: {},
           input: [],
           transformed: [],
           filtered: [],
@@ -127,13 +125,9 @@ $data = readTSV('input.tsv');
       mounted() {
         // Embedded PHP JSON into JavaScript
         this.input = <?= $data ?>;
-        
-       
-        this.types=this.input.types;
-        this.descs=this.input.descs;
-        this.input=this.input.data;
         this.transform();
         console.log(this.transformed);
+        this.input=this.input.data;
         //make arrays of: Link (paper), Native language(s), Stimulus language, Source, Comprehension questions, 
         //divide fields with multiple values: Age range, Total # words/chars, Age mean±SD
         //both: Age range
@@ -141,43 +135,7 @@ $data = readTSV('input.tsv');
       methods:
       {
         transform(){
-          for (const [key, value] of Object.entries(this.input)) {
-            this.transformed[key]={};
-            Object.entries(value).forEach(([key2, value2]) => {
-              //this.transformed[key][key2] = value2;
-              let buffer = this.split(key2, value2, this.types[key2]);
-              console.log(buffer); 
-              Object.entries(buffer).forEach(([key3, value3]) => {
-                this.transformed[key][key3]=value3;
-              });
-            });
-          }
-          console.log(this.transformed);
-
-        // Do something with key and value
-        },
-        split(key, value, type){
-          console.log(type);
-          
-          let returnvalue ={};
-          if (type.slice(0, 8)=='array of'){
-            value = value.split(';');
-          }
-          if (type==''){
-            //array of links
-            //array of choice
-
-            //array of min-max !
-            //array of mean(±SD)
-            //array Total # words/chars
-
-            //
-          }
-          else{
-            returnvalue = {[key]: value}
-          }
-          console.log(returnvalue);
-          return returnvalue;
+          this.transformed=this.input;
         },
         //filter fields
         //sort by fields

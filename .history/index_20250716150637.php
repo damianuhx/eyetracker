@@ -158,11 +158,7 @@ $data = readTSV('input.tsv');
         },
         split(key, value, type){
           console.log(type);
-          
-          let returnvalue ={};
-          if (type.slice(0, 8)=='array of'){
-            value = value.split(';');
-          }
+          let returnvalue = {[key]: value}
           if (type==''){
             //array of links
             //array of choice
@@ -172,9 +168,6 @@ $data = readTSV('input.tsv');
             //array Total # words/chars
 
             //
-          }
-          else{
-            returnvalue = {[key]: value}
           }
           console.log(returnvalue);
           return returnvalue;

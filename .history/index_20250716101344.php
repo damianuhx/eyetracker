@@ -28,7 +28,7 @@ function readTSV($filename) {
         return false;
     }
     
-    $rowcount=0;
+    $rowcount==0;
     while (($line = fgets($handle)) !== false) {
 
       $line = rtrim($line, "\r\n");
@@ -141,43 +141,23 @@ $data = readTSV('input.tsv');
       methods:
       {
         transform(){
+          console.log(this.types);
           for (const [key, value] of Object.entries(this.input)) {
-            this.transformed[key]={};
+            this.transformed[key]=[];
             Object.entries(value).forEach(([key2, value2]) => {
-              //this.transformed[key][key2] = value2;
-              let buffer = this.split(key2, value2, this.types[key2]);
-              console.log(buffer); 
-              Object.entries(buffer).forEach(([key3, value3]) => {
-                this.transformed[key][key3]=value3;
-              });
+              console.log(this.types[key2]);
+              this.transformed[key][key2] = value2;
             });
+            /*console.log(value);
+            for (const [key2, value2] of value) {
+            console.log(key2);
+            console.log(this.types[key2]);
+            this.transformed[key][key2] = value2;
+            }*/
           }
           console.log(this.transformed);
 
         // Do something with key and value
-        },
-        split(key, value, type){
-          console.log(type);
-          
-          let returnvalue ={};
-          if (type.slice(0, 8)=='array of'){
-            value = value.split(';');
-          }
-          if (type==''){
-            //array of links
-            //array of choice
-
-            //array of min-max !
-            //array of mean(±SD)
-            //array Total # words/chars
-
-            //
-          }
-          else{
-            returnvalue = {[key]: value}
-          }
-          console.log(returnvalue);
-          return returnvalue;
         },
         //filter fields
         //sort by fields
