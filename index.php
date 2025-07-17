@@ -156,11 +156,12 @@ $data = readTSV('input.tsv');
 
         // Do something with key and value
         },
-        split(key, value, type){
+        split(key, value, type){ //teilt spalten
           console.log(type);
           
           let returnvalue ={};
           if (type.slice(0, 8)=='array of'){
+            
             value = value.split(';');
           }
           if (type==''){
@@ -179,6 +180,7 @@ $data = readTSV('input.tsv');
           console.log(returnvalue);
           return returnvalue;
         },
+
         //filter fields
         //sort by fields
         //divide fields
