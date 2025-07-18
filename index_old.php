@@ -1,52 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-
-
-
-
-
-
-<!--STYLE-->
-
-<style>
-
-  th, td {
-  border: 1px solid #ccc;  /* Light grey border */
-}
-.scrollable {
-  width: fit-content;
-  max-height: calc(1.2em * 3);
-  display: block; /* needed to enable scrolling inside <td> */
-  overflow-y: clip;
-  position: relative;
-  white-space: normal;
-  word-break: break-word;
-  padding-bottom: 0.3em;
-}
-
-.scrollable::after {
-  content: "hover to show full content";
-  position: absolute;
-  bottom: -0.3em;
-  left: 0em;
-  font-size: 0.5em;
-  color: #999;
-  padding-left: 4px;
-  display: none;
-  pointer-events: none;
-  background-color: white;
-    width: 100%;
-}
-
-.scrollable.scroll-indicator::after {
-  display: block;
-}
-
-
-
-table {
+  <meta charset="UTF-8" />
+  <title>Vue Test</title>
+  <style>
+    table {
   table-layout: auto;
   border-collapse: collapse;
 }
@@ -54,22 +12,18 @@ table {
         position: sticky;
         top: 0;
         background-color: #EEEEEE;
-        z-index: 9999;
-
     }
-    .nameda{position: sticky; left: 0; background-color: #EEEEEE;z-index: 9980;}
-    td{padding: 5px}
-</style>
-
-
-
-
-  <meta charset="UTF-8" />
-  <title>Eyetracker-Studies-Collection</title>
+    .nameda{position: sticky; left: 0; background-color: #EEEEEE;}
+    .scrollable {
+    width: fit-content;
+  max-height: calc(1.5em * 3); /* 3 lines at 1.5 line-height */
+  line-height: 1.5;
+  overflow-y: clip;
+  display: block; /* needed to enable scrolling inside <td> */
+}
+    </style>
 </head>
 
-
-<!--READ DATA-->
 <?php
 function readTSV($filename) {
     $data = ['data'=>[]];
@@ -140,15 +94,13 @@ function readTSV($filename) {
 
 // Use the function with your file
 $data = readTSV('input.tsv');
+
 //echo($tsvData);
 ?>
 
 
 
 
-
-
-<!--MAIN HTML-->
 <body>
 
   <div id="app" >
@@ -181,8 +133,8 @@ $data = readTSV('input.tsv');
           : stripHtml(value)"
         :style="getCellStyle(value)"
       >
-        <div class="scrollable" v-if="!Array.isArray(value)" v-html="value" v-overflow-symbol></div>
-        <div v-overflow-symbol class="scrollable" v-else v-overflow-symbol>
+        <div class="scrollable" v-if="!Array.isArray(value)" v-html="value"></div>
+        <div v-overflow-symbol class="scrollable" v-else>
           <span v-for="(entry, index) in value" :key="index">
             <span v-html="entry"></span>
             <span v-if="index < value.length - 1"><br/></span>
@@ -260,19 +212,17 @@ $data = readTSV('input.tsv');
     if (longest > 60) {
       return { minWidth: '300px' };
     } else if (longest > 20) {
-      return { minWidth: '120px' };
-    }else if (longest > 10) {
-      return { minWidth: '80px' };
+      return { minWidth: '150px' };
     } else  {
-      return { minWidth: '60px' };
+      return { minWidth: '50px' };
     } 
   },
 
         stripHtml(html) {
-        const div = document.createElement("div");
-        div.innerHTML = html || '';
-        return div.textContent || '';
-      },
+    const div = document.createElement("div");
+    div.innerHTML = html || '';
+    return div.textContent || '';
+  },
         transform(){
           for (const [key, value] of Object.entries(this.input)) {
             this.transformed[key]={};
@@ -284,18 +234,8 @@ $data = readTSV('input.tsv');
               });
             });
           }
-        },
-        filter(){
-          for (const [key, value] of Object.entries(this.transformed)) {
-            this.filtered[key]={};
-            Object.entries(value).forEach(([key2, value2]) => {
-              //this.transformed[key][key2] = value2;
-              let buffer = this.split(key2, value2, this.types[key2]);
-              Object.entries(buffer).forEach(([key3, value3]) => {
-                this.transformed[key][key3]=value3;
-              });
-            });
-          }
+
+        // Do something with key and value
         },
         split(key, value, type){ //teilt spalten
           
@@ -331,7 +271,8 @@ if (Array.isArray(value)) {
         returnvalue[key+''+subKey] = [];
       }
       returnvalue[key+''+subKey].push(subValue);
-  }
+      //console.log(subValue); //why is only one instance shown for: 47-50 (2 expert linguists); 20-30 (12 post-graduates)
+    }
 
   } catch (error) {
     console.error("Error processing result from regex:", error);
@@ -347,7 +288,61 @@ if (Array.isArray(value)) {
         },
 
         //returns 
-        
+        regex(value, key, type){
+          
+          let returnvalue = {[key]: value.trim()};
+          if (type == 'mean-sd'){
+            const pattern = /^(?:(?<group>[^:]+):\s*)?(?<mean>[\d.]*)?(?:\s*±\s*(?<sd>[\d.]*))?$/;
+            const match = value.match(pattern);
+            const { group = "", mean = "", sd = ""} = match.groups;
+            returnvalue= {
+              group: group.trim(), // will be '' if not matched
+              mean: mean.trim(),
+              sd: sd.trim()
+            };
+          }
+          else if (type == 'min-max'){
+            //console.log('test');
+            const pattern = /^(?:\s*(?<min>[\d.]+))?(?:\s*-\s*(?<max>[\d.]+))?(?:\s*\((?<group>[^)]+)\))?\s*$/;
+            const match = value.match(pattern);
+            const { group = "", min = "", max = ""} = match.groups;
+            returnvalue= {
+              group: group.trim(), // will be '' if not matched
+              min: min.trim(),
+              max: max.trim()
+            };
+          }
+
+          //choice
+          //link
+          else if (type == 'link'){
+          returnvalue = {[key]: '<a href="'+value.trim()+'">Click</a>'};
+          }
+          else if (type == 'bibtex'){
+            returnvalue = {[key]: '<button onclick="navigator.clipboard.writeText(\''+this.escapeForOnclick(value)+'\')">Copy Text</button>'};
+          }
+          else if (type == 'number'){
+            const str = String(value); // safely convert to string
+            const match = str.match(/-?\d+(\.\d+)?/);
+            returnvalue = {[key]: match ? parseFloat(match[0]) : null};
+            //returnvalue = {[key]: String(value).match(/\d+/g).map(Number)};
+          }
+          else if (type == 'groupnumber'){
+            const pattern = /^\s*(?<mean>[\d.+-eE]+)?\s*\(\s*(?<group>[^)]+)\s*\)\s*$/;
+            const match = value.match(pattern);
+            if (!match || !match.groups) {
+              return { mean: "", group: "" };
+            }
+
+            const { mean = "", group = "" } = match.groups;
+
+            returnvalue= {
+              mean: mean.trim(),
+              group: group.trim()
+            };
+          }
+          return returnvalue;
+        },
 
 
 escapeForOnclick(str) {
@@ -391,92 +386,22 @@ sortBy(field) {
       }
     });
 
-
-
-
-app.directive('overflow-symbol', {
+    app.directive('overflow-symbol', {
   mounted(el) {
     requestAnimationFrame(() => {
-      if (el.scrollHeight > el.clientHeight) {
+      const hasOverflow = el.scrollHeight > el.clientHeight;
+      if (hasOverflow) {
         el.classList.add('scroll-indicator');
       }
     });
   },
   updated(el) {
-    if (el.scrollHeight > el.clientHeight) {
-      el.classList.add('scroll-indicator');
-    } else {
-      el.classList.remove('scroll-indicator');
-    }
+    const hasOverflow = el.scrollHeight > el.clientHeight;
+    el.classList.toggle('scroll-indicator', hasOverflow);
   }
 });
 
-
-
-
-//REGEX METHOD: splits and trims values
-app._component.methods.regex = function (value, key, type){
-          let returnvalue = {[key]: value.trim()};
-          if (type == 'mean-sd'){
-            const pattern = /^(?:(?<group>[^:]+):\s*)?(?<mean>[\d.]*)?(?:\s*±\s*(?<sd>[\d.]*))?$/;
-            const match = value.match(pattern);
-            const { group = "", mean = "", sd = ""} = match.groups;
-            returnvalue= {
-              group: group.trim(), // will be '' if not matched
-              mean: mean.trim(),
-              sd: sd.trim()
-            };
-          }
-          else if (type == 'min-max'){
-            //console.log('test');
-            const pattern = /^(?:\s*(?<min>[\d.]+))?(?:\s*-\s*(?<max>[\d.]+))?(?:\s*\((?<group>[^)]+)\))?\s*$/;
-            const match = value.match(pattern);
-            const { group = "", min = "", max = ""} = match.groups;
-            returnvalue= {
-              group: group.trim(), // will be '' if not matched
-              min: min.trim(),
-              max: max.trim()
-            };
-          }
-
-          //choice
-          //link
-          else if (type == 'link'){
-          returnvalue = {[key]: '<a href="'+value.trim()+'">Click</a>'};
-          }
-          else if (type == 'bibtex'){
-            if (value.length>10){
-              returnvalue = {[key]: '<button onclick="navigator.clipboard.writeText(\''+this.escapeForOnclick(value)+'\')">Copy Text</button>'};
-            }
-            else{
-              returnvalue = {[key]: ''}
-            }
-          }
-          else if (type == 'number'){
-            const str = String(value); // safely convert to string
-            const match = str.match(/-?\d+(\.\d+)?/);
-            returnvalue = {[key]: match ? parseFloat(match[0]) : null};
-            //returnvalue = {[key]: String(value).match(/\d+/g).map(Number)};
-          }
-          else if (type == 'groupnumber'){
-            const pattern = /^\s*(?<mean>[\d.+-eE]+)?\s*\(\s*(?<group>[^)]+)\s*\)\s*$/;
-            const match = value.match(pattern);
-            if (!match || !match.groups) {
-              return { mean: "", group: "" };
-            }
-
-            const { mean = "", group = "" } = match.groups;
-
-            returnvalue= {
-              mean: mean.trim(),
-              group: group.trim()
-            };
-          }
-          return returnvalue;
-        };
-
-app.mount('#app');
-
+    app.mount('#app');
     
   </script>
 
