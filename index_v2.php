@@ -12,82 +12,6 @@
 
 <style>
 
-
-.sticky-left {
-  position: sticky;
-  left: 0;
-  background: white;
-  flex-shrink: 0;
-  width: 200px;
-  border-right: 1px solid #ccc;
-  z-index: 10;
-}
-
-.wide-content {
-  min-width: 2000px;
-  background: #f3f3f3;
-}
-
-.filterbutton{padding: 0}
-th {
-  vertical-align: top;
-  padding: 4px 8px;
-  line-height: 1.2;
-  white-space: nowrap;
-  background-color: #EEEEEE; 
-  position: sticky;
-  top: 0;
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-}
-
-.filter-field {
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-}
-
-.filter-field label {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.filter-field input,
-.filter-field select {
-  padding: 0.4rem 0.6rem;
-  font-size: 0.9rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.range-inputs {
-  display: flex;
-  gap: 0.5rem;
-}
-
-button {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  background-color: #eee;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #ddd;
-}
-
   th, td {
   border: 1px solid #ccc;  /* Light grey border */
 }
@@ -130,10 +54,10 @@ table {
         position: sticky;
         top: 0;
         background-color: #EEEEEE;
-        z-index: 9900;
+        z-index: 9999;
 
     }
-    .nameda{position: sticky; left: 0; background-color: #EEEEEE;z-index: 9800;}
+    .nameda{position: sticky; left: 0; background-color: #EEEEEE;z-index: 9980;}
     td{padding: 5px}
 </style>
 
@@ -229,78 +153,72 @@ $data = readTSV('input.tsv');
 
   <div id="app" >
 
-  <div class="infowrapper">
-  <div class="topinfo">
-  <h3>Overview of reading studies using eyetrackers</h3>
-  Use the ">" symbol to sort the columns. | 
-  Use the 🔍 symbol to toggle filter on/off. | 
-  Report any issues <a href="mailto:info@uhx.ch">here</a>
+
+
+
+  <div class="filters">
+  <div v-for="(type, key) in types" :key="key" class="filter-field">
+    <label>{{ key }}</label>
+
+    <!-- Textsuche -->
+    <input v-if="type === 'string' || type === 'choice' || type === 'unknown'"
+           v-model="filters[key]"
+           @input="applyFilters"
+           placeholder="Suchtext..." />
+
+    <!-- Zahlenfilter -->
+    <div v-else-if="type === 'number'" class="range-inputs">
+      <input
+        type="number"
+        :value="filters[key]?.min"
+        @input="updateFilter(key, 'min', $event.target.value)"
+        placeholder="min" />
+      <input
+        type="number"
+        :value="filters[key]?.max"
+        @input="updateFilter(key, 'max', $event.target.value)"
+        placeholder="max" />
+    </div>
+
+    <!-- Spezialtypen -->
+    <div v-else-if="type.includes('mean-sd') || type.includes('min-max') || type.includes('groupnumber')" class="range-inputs">
+      <input
+        type="number"
+        :value="filters[key]?.min"
+        @input="updateFilter(key, 'min', $event.target.value)"
+        placeholder="min" />
+      <input
+        type="number"
+        :value="filters[key]?.max"
+        @input="updateFilter(key, 'max', $event.target.value)"
+        placeholder="max" />
+    </div>
+  </div>
+
+  <!-- Reset -->
+  <button @click="resetFilters">Filter zurücksetzen</button>
 </div>
-</div>
+
+
 
 
     <table>
-  <thead>
-  <tr>
-    <th class="header" v-for="(value, key) in transformed[0]" :key="key">
-      <div style="display: flex; flex-direction: column; align-items: flex-start;">
-        <div style="display: flex; justify-content: space-between; width: 100%;">
-          <span  style="cursor: pointer;">
-            {{ key }}
-            <span @click="sortBy(key)" v-if="sortField === key">
-              {{ sortAsc ? '▲' : '▼' }}
-            </span>
-            <span @click="sortBy(key)" v-else>
-              >
-            </span>
-            <button class="filterbutton" @click="toggleFilter(key)" style="">🔍</button>
-          </span>
-          
-        </div>
-        <div v-if="visibleFilters[key]" class="filter-field" style="width: 100%;">
-          <!-- Textsuche -->
-          <input v-if="isTextFilter(types[key])"
-                v-model="filters[key]"
-                :value="filters[key] || ''"
-                @input="applyFilters"
-                placeholder="Suchtext..." />
-          <!-- Dropdown für 'choice' -->
-<select v-else-if="types[key] === 'choice'"
-        v-model="filters[key]"
-        @change="applyFilters">
-  <option value="">-- Alle --</option>
-  <option v-for="option in getUniqueOptions(key)" :key="option" :value="option">
-    {{ option }}
-  </option>
-</select>
-<!-- Auswahl für array of choice -->
-<select v-else-if="types[key] === 'array of choice'" v-model="filters[key]" @change="applyFilters">
-  <option value="">-- Alle --</option>
-  <option v-for="opt in getUniqueOptions(key)" :key="opt" :value="opt">{{ opt }}</option>
-</select>
-          <!-- Zahlenfilter -->
-          <div v-else-if="types[key] === 'number'" class="range-inputs">
-            <input
-            style="width: 50px" 
-  type="number"
-  v-model.number="(filters[key] = filters[key] || { min: null, max: null }).min"
-  @input="applyFilters"
-  placeholder="min"
-/>
-            <input style="width: 50px"  type="number" v-model.number="filters[key].max" @input="applyFilters" placeholder="max" />
-          </div>
-
-          <!-- Komplexe Werte -->
-          <div v-else-if="['array of mean-sd', 'array of min-max', 'array of groupnumber'].includes(types[key])" class="range-inputs">
-            <input type="number" v-model.number="filters[key].min" @input="applyFilters" placeholder="min" />
-            <input type="number" v-model.number="filters[key].max" @input="applyFilters" placeholder="max" />
-          </div>
-        </div>
-      </div>
-    </th>
-  </tr>
-</thead>
-
+  <thead class="header">
+    <tr class="header">
+      <th
+        class="header"
+        v-for="(value, key) in transformed[0]"
+        :key="key"
+        @click="sortBy(key)"
+        style="cursor: pointer;"
+      >
+        {{ key }}
+        <span v-if="sortField === key">
+          {{ sortAsc ? '▲' : '▼' }}
+        </span>
+      </th>
+    </tr>
+  </thead>
   <tbody>
     <tr v-for="(row, index) in filtered" :key="index">
       <td
@@ -339,7 +257,6 @@ $data = readTSV('input.tsv');
           transformed: [],
           filtered: [],
           filters: {},
-          visibleFilters: {},
         }
       },
       mounted() {
@@ -348,64 +265,17 @@ $data = readTSV('input.tsv');
         
        
         this.types=this.input.types;
-        //mean-sd   group: string, mean: number, sd: number
-        //min-max   group: string, min:number, max: number
-        const typekeys = Object.keys(this.types);
-
-for (const typekey of typekeys) {
-  const type = this.types[typekey];
-  if (type === "array of mean-sd") {
-    //delete this.types[typekey];
-    this.types[`${typekey}_group`] = "string";
-    this.types[`${typekey}_mean`] = "number";
-    this.types[`${typekey}_sd`] = "number";
-  } else if (type === "array of min-max") {
-    //delete this.types[typekey];
-    this.types[`${typekey}_group`] = "string";
-    this.types[`${typekey}_min`] = "number";
-    this.types[`${typekey}_max`] = "number";
-  }
-}
-
         console.log(this.types);
         this.descs=this.input.descs;
         this.input=this.input.data;
         this.transform();
-        this.filter({});
-        
+        this.filter();
         //make arrays of: Link (paper), Native language(s), Stimulus language, Source, Comprehension questions, 
         //divide fields with multiple values: Age range, Total # words/chars, Age mean±SD
         //both: Age range
       },
       methods:
       {
-toggleFilter(key) {
-  this.visibleFilters[key] = !this.visibleFilters[key];
-  if (!this.filters[key]) {
-    this.filters[key] = '';
-  }
-},
-isTextFilter(type) {
-  return ['string', 'unknown'].includes(type);
-},
-
-    getUniqueOptions(key) {
-      const values = new Set();
-      for (const row of this.transformed) {
-        const val = row[key];
-        const list = Array.isArray(val) ? val : [val];
-        list.forEach(v => {
-          if (typeof v === 'string' && v.trim()) values.add(v.trim());
-        });
-      }
-      return Array.from(values).sort();
-    },
-    updateFilter(key, field, value) {
-      if (!this.filters[key]) this.filters[key] = {};
-      this.filters[key][field] = value ? parseFloat(value) : null;
-      this.applyFilters();
-    },
-
 
         updateFilter(key, bound, val) {
   if (!this.filters[key]) this.filters[key] = { min: null, max: null };
@@ -460,9 +330,11 @@ isTextFilter(type) {
     if (longest > 60) {
       return { minWidth: '300px' };
     } else if (longest > 20) {
-      return { minWidth: '150px' };
+      return { minWidth: '120px' };
+    }else if (longest > 10) {
+      return { minWidth: '80px' };
     } else  {
-      return { minWidth: '100px' };
+      return { minWidth: '60px' };
     } 
   },
 
@@ -483,7 +355,11 @@ isTextFilter(type) {
             });
           }
         },
-        filter(criteria ) {
+        filter(criteria = {
+  /*"Name (data link)": "geco",
+  "# participants": { min: 10 },
+  "Stimulus language": "English",*/
+}) {
   this.filtered = this.transformed.filter(entry => {
     for (const [key, rule] of Object.entries(criteria)) {
       const type = this.types[key];
@@ -623,7 +499,7 @@ sortBy(field) {
       this.sortAsc = true;
     }
 
-    this.filtered.sort((a, b) => {
+    this.transformed.sort((a, b) => {
       const valA = a[field] || '';
       const valB = b[field] || '';
 
@@ -700,7 +576,7 @@ app._component.methods.regex = function (value, key, type){
           }
           else if (type == 'bibtex'){
             if (value.length>10){
-              returnvalue = {[key]: '<button onclick="navigator.clipboard.writeText(\''+this.escapeForOnclick(value)+'\')">Copy</button>'};
+              returnvalue = {[key]: '<button onclick="navigator.clipboard.writeText(\''+this.escapeForOnclick(value)+'\')">Copy Text</button>'};
             }
             else{
               returnvalue = {[key]: ''}
