@@ -18,7 +18,7 @@
   width: 195px;
   left: 0;
   height: 55px;
-  
+  min-width: 195px !important;
 }
 .topbar{
   padding: 15px;
@@ -38,11 +38,11 @@ th {
   vertical-align: top;
   padding: 4px 8px;
   line-height: 1.2;
-  white-space: nowrap;
   background-color: #EEEEEE; 
   position: sticky;
   top: 0;
   z-index: 9999;
+  
 }
 
 .filters {
@@ -71,10 +71,12 @@ th {
 
 .filter-field input,
 .filter-field select {
-  padding: 0.4rem 0.6rem;
+  padding: 0.2rem 0.2rem;
   font-size: 0.9rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  height: 24px;
+  margin-bottom: -5px;
 }
 
 .range-inputs {
