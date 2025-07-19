@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sticky Left</title>
+  <style>
+    .wrapper {
+      width: 300px;
+      overflow-x: auto;
+      border: 1px solid #ccc;
+    }
+
+    .row {
+      display: flex;
+      width: 800px; /* größer als .wrapper, damit gescrollt werden kann */
+    }
+
+    .sticky {
+      position: sticky;
+      left: 0;
+      background: white;
+      border-right: 1px solid #ccc;
+      min-width: 150px;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .cell {
+      padding: 10px;
+      border: 1px solid #eee;
+      min-width: 150px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="row">
+    <div class="sticky">Sticky Left</div>
+    <div class="cell">Cell 1</div>
+    <div class="cell">Cell 2</div>
+    <div class="cell">Cell 3</div>
+    <div class="cell">Cell 4</div>
+  </div>
+</div>
+
+</body>
+</html>

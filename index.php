@@ -12,22 +12,27 @@
 
 <style>
 
-
-.sticky-left {
-  position: sticky;
+.topleft{
+  position: fixed;
+  top: 45px;
+  width: 195px;
   left: 0;
-  background: white;
-  flex-shrink: 0;
-  width: 200px;
-  border-right: 1px solid #ccc;
-  z-index: 10;
+  height: 55px;
+  
 }
-
-.wide-content {
-  min-width: 2000px;
-  background: #f3f3f3;
+.topbar{
+  padding: 15px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  background-color:white;
+  width: 100%;
+  overflow: hidden;
+  max-height: 15px;
+  min-height: 15px;
+  line-height: 1.1;
 }
-
 .filterbutton{padding: 0}
 th {
   vertical-align: top;
@@ -37,6 +42,7 @@ th {
   background-color: #EEEEEE; 
   position: sticky;
   top: 0;
+  z-index: 9999;
 }
 
 .filters {
@@ -53,7 +59,8 @@ th {
 .filter-field {
   display: flex;
   flex-direction: column;
-  min-width: 200px;
+  min-width: 100%;
+  max-width: 100%;
 }
 
 .filter-field label {
@@ -76,7 +83,7 @@ th {
 }
 
 button {
-  padding: 0.5rem 1rem;
+
   font-size: 0.9rem;
   background-color: #eee;
   border: 1px solid #ccc;
@@ -91,8 +98,12 @@ button:hover {
   th, td {
   border: 1px solid #ccc;  /* Light grey border */
 }
+
+thead{
+  background-color: #EEEEEE;
+}
 .scrollable {
-  width: fit-content;
+  width: 100%;
   max-height: calc(1.2em * 3);
   display: block; /* needed to enable scrolling inside <td> */
   overflow-y: clip;
@@ -103,7 +114,7 @@ button:hover {
 }
 
 .scrollable::after {
-  content: "hover to show full content";
+  content: "hover to show all";
   position: absolute;
   bottom: -0.3em;
   left: 0em;
@@ -123,17 +134,19 @@ button:hover {
 
 
 table {
+  margin-top: 45px;
   table-layout: auto;
   border-collapse: collapse;
 }
     .header{
         position: sticky;
-        top: 0;
+        top: 45px;
         background-color: #EEEEEE;
         z-index: 9900;
+        height: 55px;
 
     }
-    .nameda{position: sticky; left: 0; background-color: #EEEEEE;z-index: 9800;}
+    .nameda{position: sticky; left: 0; background-color: #EEEEEE;z-index: 9950; min-width: 200px !important}
     td{padding: 5px}
 </style>
 
@@ -226,23 +239,20 @@ $data = readTSV('input.tsv');
 
 <!--MAIN HTML-->
 <body>
+  </div>
 
   <div id="app" >
-
-  <div class="infowrapper">
-  <div class="topinfo">
-  <h3>Overview of reading studies using eyetrackers</h3>
+    <div class="topbar">
   Use the ">" symbol to sort the columns. | 
   Use the 🔍 symbol to toggle filter on/off. | 
-  Report any issues <a href="mailto:info@uhx.ch">here</a>
-</div>
-</div>
+  Report any issues <a href="mailto:info@uhx.ch">here</a> | 
+  <button @click="resetFilters" style="">🔄 Reset all filters</button>
+  </div>
 
-
-    <table>
+  <table>
   <thead>
-  <tr>
-    <th class="header" v-for="(value, key) in transformed[0]" :key="key">
+  <tr style="min-height: 50px;">
+    <th :style="getTypeBasedWidth(types[key] || types[key.split('_')[0]])" :title="descs[key.split('_')[0]]" :class="index === 0 ? 'topleft' : 'header'" v-for="(value, key, index) in transformed[0]" :key="key">
       <div style="display: flex; flex-direction: column; align-items: flex-start;">
         <div style="display: flex; justify-content: space-between; width: 100%;">
           <span  style="cursor: pointer;">
@@ -253,7 +263,7 @@ $data = readTSV('input.tsv');
             <span @click="sortBy(key)" v-else>
               >
             </span>
-            <button class="filterbutton" @click="toggleFilter(key)" style="">🔍</button>
+            <button v-if="true || types[key]!=='bibtex' && types[key]!=='array of link'" class="filterbutton" @click="toggleFilter(key)" style="">{{ visibleFilters[key] ? '✖️' : '🔍' }}</button>
           </span>
           
         </div>
@@ -304,6 +314,7 @@ $data = readTSV('input.tsv');
   <tbody>
     <tr v-for="(row, index) in filtered" :key="index">
       <td
+
       v-overflow-symbol
         v-for="(value, key) in row"
         :key="key"
@@ -311,13 +322,13 @@ $data = readTSV('input.tsv');
         :title="Array.isArray(value)
           ? value.map(stripHtml).join(', ')
           : stripHtml(value)"
-        :style="getCellStyle(value)"
-      >
+        :style="getTypeBasedWidth(types[key] || types[key.split('_')[0]]) + ((types[key] || types[key.split('_')[0]]) === 'number' ? '; text-align: right;' : '')"
+  >
         <div class="scrollable" v-if="!Array.isArray(value)" v-html="value" v-overflow-symbol></div>
         <div v-overflow-symbol class="scrollable" v-else v-overflow-symbol>
           <span v-for="(entry, index) in value" :key="index">
             <span v-html="entry"></span>
-            <span v-if="index < value.length - 1"><br/></span>
+            <span v-if="index < value.length - 1">, </span>
           </span>
         </div>
       </td>
@@ -380,13 +391,23 @@ for (const typekey of typekeys) {
       methods:
       {
 toggleFilter(key) {
-  this.visibleFilters[key] = !this.visibleFilters[key];
-  if (!this.filters[key]) {
-    this.filters[key] = '';
+  if (this.visibleFilters[key]) {
+    // Filter ist sichtbar → zurücksetzen und verstecken
+    delete this.filters[key];                // Filter entfernen
+    this.visibleFilters[key] = false;        // Ausblenden
+    this.applyFilters();                     // Filter anwenden
+  } else {
+    // Filter anzeigen
+    this.visibleFilters[key] = true;
+    if (this.types[key] === 'number' || this.types[key]?.includes('min-max') || this.types[key]?.includes('mean-sd') || this.types[key]?.includes('groupnumber')) {
+      this.filters[key] = { min: null, max: null };
+    } else {
+      this.filters[key] = '';
+    }
   }
 },
 isTextFilter(type) {
-  return ['string', 'unknown'].includes(type);
+  return ['string', 'unknown', 'array of link', 'bibtex'].includes(type);
 },
 
     getUniqueOptions(key) {
@@ -418,10 +439,15 @@ isTextFilter(type) {
         applyFilters() {
     this.filter(this.filters);
   },
-  resetFilters() {
-    this.filters = {};
-    this.applyFilters();
-  },
+resetFilters() {
+  this.filters = {};
+
+  // Hide all visible filter inputs
+  this.visibleFilters = {};
+  
+  // Reapply filter (will reset the table view)
+  this.applyFilters();
+},
 
         getLongestTextLength(htmlArray) {
     let maxLength = 0;
@@ -458,13 +484,44 @@ isTextFilter(type) {
     }
 
     if (longest > 60) {
-      return { minWidth: '300px' };
+      return { minWidth: '300px', };
     } else if (longest > 20) {
       return { minWidth: '150px' };
     } else  {
       return { minWidth: '100px' };
     } 
   },
+
+getTypeBasedWidth(type) {
+  console.log("Type for width:", type);
+  let px;
+
+  switch (type) {
+    case 'number':
+      px = '150px';
+      break;
+    case 'string':
+    case 'choice':
+      px = '150px';
+      break;
+    case 'array of choice':
+    case 'array of link':
+      px = '200px';
+      break;
+    case 'array of min-max':
+    case 'array of mean-sd':
+    case 'array of groupnumber':
+      px = '180px';
+      break;
+    case 'bibtex':
+      px = '50px';
+      break;
+    default:
+      px = '150px'; // fallback
+  }
+
+  return `width: ${px}; min-width: ${px}; max-width: ${px};`;
+},
 
         stripHtml(html) {
         const div = document.createElement("div");
@@ -499,7 +556,7 @@ isTextFilter(type) {
       };
 
       // --- TYPE-BASED FILTERING ---
-      if (type === 'string' || type === 'unknown' || type === 'choice') {
+      if (type === 'string' || type === 'unknown' || type === 'choice' || type == 'array of link' || type == 'bibtex') {
         if (!matches(value)) return false;
       }
 
