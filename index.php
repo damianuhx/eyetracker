@@ -75,7 +75,7 @@ th {
   font-size: 0.9rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  height: 24px;
+  height: 22px;
   margin-bottom: -5px;
 }
 
